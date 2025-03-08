@@ -121,11 +121,11 @@ class RAHA_OT_InfoPopup(bpy.types.Operator):
             
             col = layout.column()
             col.label(text="update 07/03/2025 - 15:14")
-            col.label(text="Raha Tools v.05")            
+            col.label(text="Raha Tools v.03")            
             col.separator()            
-            col.label(text="- update save anm ")
-            col.label(text="- add audio")
-            col.label(text="- update import animation")
+            col.label(text="- many updates ")
+#            col.label(text="- add audio")
+#            col.label(text="- update import animation")
 #           col.label(text="- Playblast + HUD")
 #            col.separator()
 #            col.label(text="- add fitur keyframe editor di graph editor")
@@ -140,7 +140,7 @@ class RAHA_OT_InfoPopup(bpy.types.Operator):
 #=========================================== Panel Run Script ========================================================
 class RAHA_PT_Tools_For_Animation(bpy.types.Panel):
     """Panel tambahan yang muncul setelah Run Tools ditekan"""
-    bl_label = "Raha Tools blender 3+"
+    bl_label = "Raha Tools blender 4+"
     bl_idname = "RAHA_PT_For_Animation"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
