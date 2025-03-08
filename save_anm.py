@@ -1,9 +1,6 @@
 import bpy
 import math
 import os
-
-
-
 # Tambahkan properti ke scene
 bpy.types.Scene.use_custom_frame_range = bpy.props.BoolProperty(
     name="Gunakan Rentang Bingkai Kustom",
@@ -262,7 +259,7 @@ def export_bone_keyframe_data(context, filepath):
                 if prev_frame is None:
                     file.write("frame_current = scene.frame_current\n")
                     file.write("scene.frame_set(frame_current)\n")
-                    file.write("bpy.ops.anim.keyframe_insert_by_name(type=\"LocRotScaleCProp\")\n")
+                    file.write("bpy.ops.anim.keyframe_insert()\n")
 
                 else:
                     frame_distance = frame - prev_frame
