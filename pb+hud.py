@@ -302,11 +302,15 @@ class VIEW3D_OT_Playblast(bpy.types.Operator):
                         space.overlay.show_relationship_lines = False
                         space.overlay.show_extras = False
                         space.show_gizmo = False
+                        space.overlay.show_viewer_attribute = False
                         space.show_reconstruction = False
                         space.overlay.show_annotation = False
                         space.overlay.show_cursor = False
                         space.overlay.show_text = False
                         space.region_3d.view_perspective = 'CAMERA'
+                        
+                                # Atur overlay viewport
+
 
         # Nonaktifkan ekstensi file otomatis
         scene.render.use_file_extension = False
