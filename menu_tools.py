@@ -123,7 +123,7 @@ class RAHA_OT_InfoPopup(bpy.types.Operator):
             col.label(text="update 07/03/2025 - 15:14")
             col.label(text="Raha Tools v.03")            
             col.separator()            
-            col.label(text="- many updates ")
+            col.label(text="- update fitur smart bake ")
 #            col.label(text="- add audio")
 #            col.label(text="- update import animation")
 #           col.label(text="- Playblast + HUD")
