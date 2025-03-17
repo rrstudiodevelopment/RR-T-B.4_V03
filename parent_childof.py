@@ -702,10 +702,10 @@ class VIEW3D_PT_Raha_Parents(bpy.types.Panel):
 #pisah tombol khusus child-off  
         layout.separator()  
         layout.label(text="Parent Child off")                                     
-        layout.operator("pose.parent_child_off", text="Parent_Child_off", icon="") 
+        layout.operator("pose.parent_child_off", text="Parent_Child_off") 
         row = layout.row()        
         row.operator("object.apply_childof", text="Apply Child-Of")
-        row.operator("object.delete_childof", text="Delete Child-Of", icon="")
+        row.operator("object.delete_childof", text="Delete Child-Of")
         layout.operator("object.set_inverse_childof", text="Set Inverse")
         row = layout.row()        
         row.operator("object.enable", text="Enable")        
