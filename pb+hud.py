@@ -5,6 +5,12 @@ import subprocess
 from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 
+def update_temp_resolution(self, context):
+    scene = context.scene
+    percentage = scene.temporary_resolution_percentage / 100
+    scene.temp_res_x = int(scene.render.resolution_x * percentage)
+    scene.temp_res_y = int(scene.render.resolution_y * percentage)
+
 
 class AUDIO_OT_import(bpy.types.Operator, ImportHelper):
     """Import an audio file and set its start position"""
@@ -264,15 +270,25 @@ class VIEW3D_OT_Playblast(bpy.types.Operator):
         # Simpan resolusi asli scene
         original_resolution_x = scene.render.resolution_x
         original_resolution_y = scene.render.resolution_y
+        original_resolution_percentage = scene.render.resolution_percentage
 
-        # Jika use_temporary_resolution dicentang, gunakan resolusi sementara
+        # Inisialisasi default (gunakan resolusi asli)
+        resolution_x = original_resolution_x
+        resolution_y = original_resolution_y
+        resolution_percentage = original_resolution_percentage
+
+        # Jika gunakan resolusi sementara, hitung ulang
         if scene.use_temporary_resolution:
-            resolution_x = scene.temporary_resolution_x
-            resolution_y = scene.temporary_resolution_y
+            resolution_percentage = scene.temporary_resolution_percentage
+            resolution_x = int(original_resolution_x * (resolution_percentage / 100))
+            resolution_y = int(original_resolution_y * (resolution_percentage / 100))
+
+        # Jika use_temporary_resolution dicentang, gunakan persentase resolusi sementara
+        if scene.use_temporary_resolution:
+            bpy.context.scene.render.resolution_percentage = scene.temporary_resolution_percentage
         else:
-            # Gunakan resolusi scene saat ini
-            resolution_x = original_resolution_x
-            resolution_y = original_resolution_y
+            bpy.context.scene.render.resolution_percentage = original_resolution_percentage
+
 
         if not output_path:
             self.report({'ERROR'}, "Output path is not set. Please specify it in the Scene settings.")
@@ -309,8 +325,7 @@ class VIEW3D_OT_Playblast(bpy.types.Operator):
                         space.overlay.show_text = False
                         space.region_3d.view_perspective = 'CAMERA'
                         
-                                # Atur overlay viewport
-
+                        # Atur overlay viewport
 
         # Nonaktifkan ekstensi file otomatis
         scene.render.use_file_extension = False
@@ -335,6 +350,7 @@ class VIEW3D_OT_Playblast(bpy.types.Operator):
         # Kembalikan resolusi scene ke aslinya
         scene.render.resolution_x = original_resolution_x
         scene.render.resolution_y = original_resolution_y
+        scene.render.resolution_percentage = original_resolution_percentage
         
         # Buka file yang telah dirender
         try:
@@ -410,20 +426,22 @@ class VIEW3D_PT_PlayblastPanel(bpy.types.Panel):
             
             # Checkbox untuk menggunakan resolusi sementara
             layout.prop(scene, "use_temporary_resolution", text="Use Temporary Resolution")
-            if scene.use_temporary_resolution:
-                layout.prop(scene, "temporary_resolution_x", text="Resolution X")
-                layout.prop(scene, "temporary_resolution_y", text="Resolution Y")
-            
+
+        if scene.use_temporary_resolution:
+            layout.prop(scene, "temporary_resolution_percentage", text="Resolution Percentage", slider=True)
+            layout.label(text=f"Output Resolution: {scene.temp_res_x} x {scene.temp_res_y}")
+
+                    
             layout.separator()
             
             layout.prop(scene, "use_custom_frame_range", text="Use Custom Frame Range")
-            if scene.use_custom_frame_range:
-                layout.prop(scene, "custom_start_frame", text="Start Frame")
-                layout.prop(scene, "custom_end_frame", text="End Frame")
+        if scene.use_custom_frame_range:
+            layout.prop(scene, "custom_start_frame", text="Start Frame")
+            layout.prop(scene, "custom_end_frame", text="End Frame")
             
-            layout.separator()
-            layout.operator("view3d.playblast", text="PLAYBLAST")
-            layout.separator()
+        layout.separator()
+        layout.operator("view3d.playblast", text="PLAYBLAST")
+        layout.separator()
         
 
 classes = [
@@ -439,6 +457,20 @@ classes = [
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+        
+    bpy.types.Scene.temporary_resolution_percentage = bpy.props.IntProperty(
+    name="Resolution Percentage",
+    description="Set temporary resolution percentage for playblast",
+    default=100,
+    min=1,
+    max=100,
+    update=update_temp_resolution  # Otomatis update saat nilai berubah
+)
+
+
+    bpy.types.Scene.temp_res_x = bpy.props.IntProperty(name="Temp Res X")
+    bpy.types.Scene.temp_res_y = bpy.props.IntProperty(name="Temp Res Y")
+    
     bpy.types.Scene.active_audio_name = StringProperty(default="No Audio Imported")        
     bpy.types.Scene.add_audio = bpy.props.BoolProperty(name="Add Audio", default=False)        
     bpy.types.Scene.use_hud = bpy.props.BoolProperty(name="Use HUD", default=False)
