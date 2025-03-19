@@ -4,7 +4,7 @@ import os
 # Tambahkan properti ke scene
 bpy.types.Scene.use_custom_frame_range = bpy.props.BoolProperty(
     name="Gunakan Rentang Bingkai Kustom",
-    description="Aktifkan untuk menggunakan rentang bingkai kustom",
+    description="Start - end frame export",
     default=False  # Nilai default properti
 )
 
@@ -16,16 +16,17 @@ bpy.types.Scene.custom_start_frame = bpy.props.IntProperty(
 
 bpy.types.Scene.custom_end_frame = bpy.props.IntProperty(
     name="Bingkai Selesai",
-    description="Bingkai akhir untuk ekspor",
+    description="Start - end frame",
     default=250
 )
 
 bpy.types.Scene.insert_missing_keyframes = bpy.props.BoolProperty(
     name="Perbaiki Keyframe",
-    description="Sisipkan keyframe yang hilang",
+    description="Scan and fix your keyframe",
     default=False
 )
 
+        
 #================================ DEF insert_missing_keyframes =============================
 def insert_missing_keyframes():
     obj = bpy.context.active_object
@@ -118,9 +119,18 @@ def insert_missing_keyframes():
         scene.frame_start = original_start_frame
         scene.frame_end = original_end_frame
 #========================================= EKPORT BONE ================================================
-# Fungsi export_bone_keyframe_data tetap sama seperti sebelumnya
-import os
-import bpy
+def get_value_type(bone, prop_name, value):
+    # Periksa tipe data properti di Blender
+    if prop_name in bone and isinstance(bone[prop_name], int):
+        return "int"
+    elif isinstance(value, float):
+        return "float"
+    elif isinstance(value, str):
+        return "str"
+    elif isinstance(value, (list, tuple)):
+        return "list"
+    else:
+        return "unknown"
 
 def export_bone_keyframe_data(context, filepath):
     armature_obj = context.object
@@ -220,13 +230,11 @@ def export_bone_keyframe_data(context, filepath):
                                                 # Ambil nilai keyframe
                                                 value = keyframe.co[1]
 
-                                                # Periksa tipe data custom property
-                                                if isinstance(value, int):
-                                                    # Jika nilai adalah float, simpan sebagai float
-                                                    bone_data[bone.name][frame]["custom_props"][prop_name] = float(value)
-                                                else:
-                                                    # Jika nilai adalah integer, simpan sebagai integer
-                                                    bone_data[bone.name][frame]["custom_props"][prop_name] = int(value)
+                                                # Simpan custom property dengan tipe data
+                                                bone_data[bone.name][frame]["custom_props"][prop_name] = {
+                                                    "value": value,
+                                                    "type": get_value_type(bone, prop_name, value)
+                                                }
 
         if not bone_data:
             return {'CANCELLED'}
@@ -308,23 +316,23 @@ def export_bone_keyframe_data(context, filepath):
                                 file.write(f"    bone.keyframe_insert(data_path='scale')\n")
                                     
                             elif data_path == "custom_props":
-                                for prop_name, prop_value in value.items():
-                                    # Periksa tipe data prop_value
-                                    if isinstance(prop_value, int):
-                                        # Jika prop_value adalah integer, tulis sebagai integer
-                                        file.write(f'    if "{prop_name}" in bone:\n')                                    
-                                        file.write(f'        bone["{prop_name}"] = {prop_value}\n')
-                                    elif isinstance(prop_value, float):
-                                        # Jika prop_value adalah float, tulis sebagai float
-                                        file.write(f'    if "{prop_name}" in bone:\n')                                    
-                                        file.write(f'        bone["{prop_name}"] = {prop_value:.6f}\n')  # Format dengan 6 angka di belakang koma (atau bisa disesuaikan)
+                                for prop_name, prop_data in value.items():
+                                    prop_value = prop_data["value"]
+                                    prop_type = prop_data["type"]
+                                    
+                                    if prop_type == "int":
+                                        file.write(f'    bone["{prop_name}"] = int({prop_value})\n')
+                                    elif prop_type == "float":
+                                        file.write(f'    bone["{prop_name}"] = float({prop_value})\n')
+                                    elif prop_type == "str":
+                                        file.write(f'    bone["{prop_name}"] = "{prop_value}"\n')
+                                    elif prop_type == "list":
+                                        file.write(f'    bone["{prop_name}"] = {list(prop_value)}\n')
                                     else:
-                                        # Tulis tipe data lain (jika ada)
-                                        file.write(f'    if "{prop_name}" in bone:\n')                                    
-                                        file.write(f'        bone["{prop_name}"] = {prop_value}\n')
+                                        file.write(f'    bone["{prop_name}"] = {prop_value}\n')
                                     
                                     # Tambahkan keyframe
-                                    file.write(f'        bone.keyframe_insert(data_path=\'["{prop_name}"]\')\n')
+                                    file.write(f'    bone.keyframe_insert(data_path=\'["{prop_name}"]\')\n')
 
                                     
                 prev_frame = frame
@@ -457,8 +465,9 @@ class ANIMBoneKeyframePanel(bpy.types.Panel):
             layout.prop(scene, "custom_end_frame", text="End Frame")        
            
         layout.prop(context.scene, "insert_missing_keyframes", text="let's fix your keyframe")
-        export_op = layout.operator("object.export_bone_keyframe_data", text="SAVE ANIMATION")
-        export_op.insert_missing_keyframes = context.scene.insert_missing_keyframes        
+        export_op = layout.operator("object.export_bone_keyframe_data", text="Export Animation")
+        export_op.insert_missing_keyframes = context.scene.insert_missing_keyframes      
+        layout.operator("object.export_bone_keyframe_data_pose", text="Export (Pose)") 
         
         layout.separator()        
                                              
