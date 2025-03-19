@@ -428,21 +428,21 @@ class VIEW3D_PT_PlayblastPanel(bpy.types.Panel):
             # Checkbox untuk menggunakan resolusi sementara
             layout.prop(scene, "use_temporary_resolution", text="Use Temporary Resolution")
 
-        if scene.use_temporary_resolution:
-            layout.prop(scene, "temporary_resolution_percentage", text="Resolution Percentage", slider=True)
-            layout.label(text=f"Output Resolution: {scene.temp_res_x} x {scene.temp_res_y}")
+            if scene.use_temporary_resolution:
+                layout.prop(scene, "temporary_resolution_percentage", text="Resolution Percentage", slider=True)
+                layout.label(text=f"Output Resolution: {scene.temp_res_x} x {scene.temp_res_y}")
 
-                    
+                        
+                layout.separator()
+                
+            layout.prop(scene, "use_custom_frame_range", text="Use Custom Frame Range")
+            if scene.use_custom_frame_range:
+                layout.prop(scene, "custom_start_frame", text="Start Frame")
+                layout.prop(scene, "custom_end_frame", text="End Frame")
+                
             layout.separator()
-            
-        layout.prop(scene, "use_custom_frame_range", text="Use Custom Frame Range")
-        if scene.use_custom_frame_range:
-            layout.prop(scene, "custom_start_frame", text="Start Frame")
-            layout.prop(scene, "custom_end_frame", text="End Frame")
-            
-        layout.separator()
-        layout.operator("view3d.playblast", text="PLAYBLAST")
-        layout.separator()
+            layout.operator("view3d.playblast", text="PLAYBLAST")
+            layout.separator()
         
 
 classes = [
