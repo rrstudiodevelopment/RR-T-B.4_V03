@@ -347,7 +347,8 @@ class VIEW3D_OT_Playblast(bpy.types.Operator):
         scene.frame_start = original_start_frame
         scene.frame_end = original_end_frame
 
-        # Kembalikan resolusi scene ke aslinya
+        scene.frame_start = original_start_frame
+        scene.frame_end = original_end_frame
         scene.render.resolution_x = original_resolution_x
         scene.render.resolution_y = original_resolution_y
         scene.render.resolution_percentage = original_resolution_percentage
