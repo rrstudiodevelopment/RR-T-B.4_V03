@@ -435,7 +435,7 @@ class VIEW3D_PT_PlayblastPanel(bpy.types.Panel):
                     
             layout.separator()
             
-            layout.prop(scene, "use_custom_frame_range", text="Use Custom Frame Range")
+        layout.prop(scene, "use_custom_frame_range", text="Use Custom Frame Range")
         if scene.use_custom_frame_range:
             layout.prop(scene, "custom_start_frame", text="Start Frame")
             layout.prop(scene, "custom_end_frame", text="End Frame")
